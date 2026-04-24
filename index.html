@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Smart Kids - Book 3: Let's Earn!</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #1a1a2e;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: linear-gradient(135deg, #FF8C00, #FFD700);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .top-bar h1 {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .page-indicator {
+            position: absolute;
+            right: 20px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            background: rgba(0,0,0,0.3);
+            padding: 4px 16px;
+            border-radius: 20px;
+        }
+
+        /* Slide Container */
+        .slide-wrapper {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 100px);
+            margin-top: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .slide-container {
+            position: relative;
+            max-width: 90vw;
+            max-height: calc(100vh - 110px);
+            aspect-ratio: 16/9;
+        }
+        .slide-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+
+        /* Navigation Buttons */
+        .nav-btn {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+        .nav-btn:hover { background: #FFD700; transform: translateY(-50%) scale(1.1); }
+        .nav-btn:active { transform: translateY(-50%) scale(0.95); }
+        .nav-btn.prev { left: 15px; }
+        .nav-btn.next { right: 15px; }
+        .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .nav-btn:disabled:hover { background: rgba(255,255,255,0.9); transform: translateY(-50%); }
+
+        /* Bottom Bar */
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 0 80px;
+            z-index: 100;
+            overflow-x: auto;
+        }
+        .thumb-btn {
+            width: 40px;
+            height: 28px;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            background-size: cover;
+            background-position: center;
+        }
+        .thumb-btn:hover { opacity: 1; border-color: #FFD700; }
+        .thumb-btn.active { opacity: 1; border-color: #FF8C00; border-width: 3px; }
+
+        /* ===== Small Trigger Button (corner icon) ===== */
+        .tool-trigger-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid white;
+            background: #FF8C00;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 20;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+            transition: all 0.2s;
+            animation: pulse 2s infinite;
+        }
+        .tool-trigger-btn:hover { transform: scale(1.15); background: #E67E00; }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 16px rgba(255,140,0,0.5); }
+            50% { box-shadow: 0 4px 24px rgba(255,140,0,0.9), 0 0 0 8px rgba(255,140,0,0.2); }
+        }
+
+        /* ===== Modal Overlay ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal-close-zone {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            cursor: pointer;
+        }
+
+        /* ===== Dice Modal ===== */
+        .dice-modal {
+            position: relative;
+            background: linear-gradient(135deg, #FFF8E1, #ffffff);
+            border-radius: 24px;
+            padding: 30px 40px;
+            text-align: center;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+            z-index: 201;
+            border: 4px solid #FF8C00;
+        }
+        .dice-modal h2 {
+            font-size: 24px;
+            color: #FF8C00;
+            margin-bottom: 16px;
+        }
+        .dice-box {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border: 5px solid #FF8C00;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        .dice-box:hover { transform: scale(1.05); }
+        .dice-box:active { transform: scale(0.95); }
+        .dice-box.rolling {
+            animation: diceShake 0.12s infinite alternate;
+        }
+        @keyframes diceShake {
+            0% { transform: rotate(-12deg) scale(1.08); }
+            100% { transform: rotate(12deg) scale(1.08); }
+        }
+        .dice-face {
+            display: grid;
+            width: 90px;
+            height: 90px;
+            padding: 12px;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 3px;
+            place-items: center;
+        }
+        .dice-dot {
+            width: 18px;
+            height: 18px;
+            background: #333;
+            border-radius: 50%;
+        }
+        .dice-result-text {
+            font-size: 36px;
+            font-weight: bold;
+            color: #FF8C00;
+            min-height: 50px;
+        }
+        .dice-instruction {
+            font-size: 16px;
+            color: #666;
+            margin-top: 8px;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: -12px;
+            right: -12px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 3px solid white;
+            background: #FF8C00;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .modal-close-btn:hover { background: #E67E00; }
+
+        /* ===== Spinner Modal ===== */
+        .spinner-modal {
+            position: relative;
+            background: linear-gradient(135deg, #FFF3E0, #ffffff);
+            border-radius: 24px;
+            padding: 30px 40px;
+            text-align: center;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+            z-index: 201;
+            border: 4px solid #FF6347;
+        }
+        .spinner-modal h2 {
+            font-size: 24px;
+            color: #FF6347;
+            margin-bottom: 16px;
+        }
+        .spinner-area {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            margin: 0 auto 16px;
+        }
+        .spinner-wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 6px solid white;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+            background: conic-gradient(
+                #FF6B6B 0deg 60deg,
+                #4ECDC4 60deg 120deg,
+                #FFE66D 120deg 180deg,
+                #6C5CE7 180deg 240deg,
+                #FF9F1C 240deg 300deg,
+                #A8E6CF 300deg 360deg
+            );
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+            position: relative;
+            cursor: pointer;
+        }
+        .spinner-pointer {
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-top: 28px solid #FF6347;
+            z-index: 5;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+        }
+        .spinner-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #FF6347;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #FF6347;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .spinner-section-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100px;
+            height: 0;
+            transform-origin: 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            pointer-events: none;
+        }
+        .spinner-section-label span {
+            font-size: 12px;
+            font-weight: bold;
+            color: rgba(0,0,0,0.7);
+            text-shadow: 0 0 3px white, 0 0 6px white;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        .spinner-result-text {
+            font-size: 28px;
+            font-weight: bold;
+            color: #FF6347;
+            min-height: 40px;
+        }
+        .spinner-instruction {
+            font-size: 16px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        /* Keyboard hint */
+        .keyboard-hint {
+            position: fixed;
+            bottom: 55px;
+            right: 20px;
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+            z-index: 101;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <h1>Money Smart Kids - Book 3: Let's Earn! 小小理財家 - 第三冊：一起來賺錢！</h1>
+        <span class="page-indicator" id="pageIndicator">1 / 50</span>
+    </div>
+
+    <!-- Navigation -->
+    <button class="nav-btn prev" id="prevBtn" onclick="goToPage(currentPage - 1)">&#9664;</button>
+    <button class="nav-btn next" id="nextBtn" onclick="goToPage(currentPage + 1)">&#9654;</button>
+
+    <!-- Slide Display -->
+    <div class="slide-wrapper">
+        <div class="slide-container" id="slideContainer">
+            <img id="slideImage" src="" alt="Slide">
+            
+            <!-- Small trigger buttons in corner -->
+            <div class="tool-trigger-btn" id="diceTrigger" onclick="openDiceModal()">&#127922;</div>
+            <div class="tool-trigger-btn" id="spinnerTrigger" onclick="openSpinnerModal()">&#127919;</div>
+        </div>
+    </div>
+
+    <!-- Dice Modal -->
+    <div class="modal-overlay" id="diceModal">
+        <div class="modal-close-zone" onclick="closeDiceModal()"></div>
+        <div class="dice-modal">
+            <div class="modal-close-btn" onclick="closeDiceModal()">&#10005;</div>
+            <h2>&#127922; Roll the Dice! 擲骰子！</h2>
+            <div class="dice-box" id="diceBox" onclick="rollDice()">
+                <div class="dice-face" id="diceFace"></div>
+            </div>
+            <div class="dice-result-text" id="diceResultText"></div>
+            <div class="dice-instruction">Click the dice to roll! 點擊骰子來擲！</div>
+        </div>
+    </div>
+
+    <!-- Spinner Modal -->
+    <div class="modal-overlay" id="spinnerModal">
+        <div class="modal-close-zone" onclick="closeSpinnerModal()"></div>
+        <div class="spinner-modal">
+            <div class="modal-close-btn" onclick="closeSpinnerModal()" style="border-color:white; background:#FF6347;">&#10005;</div>
+            <h2>&#127920; Chore Spinner 家事轉盤</h2>
+            <div class="spinner-area">
+                <div class="spinner-pointer"></div>
+                <div class="spinner-wheel" id="spinnerWheel" onclick="spinWheel()">
+                    <div class="spinner-section-label" style="transform: rotate(30deg);"><span style="transform: rotate(-30deg);">wash $1</span></div>
+                    <div class="spinner-section-label" style="transform: rotate(90deg);"><span style="transform: rotate(-90deg);">sweep $1</span></div>
+                    <div class="spinner-section-label" style="transform: rotate(150deg);"><span style="transform: rotate(-150deg);">water $1</span></div>
+                    <div class="spinner-section-label" style="transform: rotate(210deg);"><span style="transform: rotate(-210deg);">walk dog $2</span></div>
+                    <div class="spinner-section-label" style="transform: rotate(270deg);"><span style="transform: rotate(-270deg);">make bed $1</span></div>
+                    <div class="spinner-section-label" style="transform: rotate(330deg);"><span style="transform: rotate(-330deg);">trash $1</span></div>
+                </div>
+                <div class="spinner-center" onclick="spinWheel()">SPIN!</div>
+            </div>
+            <div class="spinner-result-text" id="spinnerResultText"></div>
+            <div class="spinner-instruction">Click SPIN or the wheel! 點擊 SPIN 或轉盤！</div>
+        </div>
+    </div>
+
+    <!-- Bottom Thumbnail Bar -->
+    <div class="bottom-bar" id="bottomBar"></div>
+
+    <!-- Keyboard Hint -->
+    <div class="keyboard-hint">Use &#8592; &#8594; arrow keys to navigate 使用方向鍵翻頁</div>
+
+    <script>
+        // All 50 slide images
+        const slides = [
+            "images/p01_cover_generated.webp",
+            "images/p02_contents_generated.webp",
+            "images/p03_remember_1_generated.webp",
+            "images/p04_remember_2_generated.webp",
+            "images/p05_unit1_title_generated.webp",
+            "images/p06_unit1_talk_1_generated.webp",
+            "images/p07_unit1_talk_2_generated.webp",
+            "images/p08_unit1_learn_1_generated.webp",
+            "images/p09_unit1_learn_2_generated.webp",
+            "images/p10_unit1_learn_more_1_generated.webp",
+            "images/p11_unit1_learn_more_2_generated.webp",
+            "images/p12_unit1_read_generated.webp",
+            "images/p13_unit1_sing_generated.webp",
+            "images/p14_unit1_play_generated.webp",
+            "images/p15_unit2_title_generated.webp",
+            "images/p16_unit2_talk_1_generated.webp",
+            "images/p17_unit2_talk_2_generated.webp",
+            "images/p18_unit2_learn_1_generated.webp",
+            "images/p19_unit2_learn_2_generated.webp",
+            "images/p20_unit2_learn_more_1_generated.webp",
+            "images/p21_unit2_learn_more_2_generated.webp",
+            "images/p22_unit2_read_generated.webp",
+            "images/p23_unit2_sing_generated.webp",
+            "images/p24_unit2_play_generated.webp",
+            "images/p25_review1_a_generated.webp",
+            "images/p26_review1_b_generated.webp",
+            "images/p27_unit3_title_generated.webp",
+            "images/p28_unit3_talk_1_generated.webp",
+            "images/p29_unit3_talk_2_generated.webp",
+            "images/p30_unit3_learn_1_generated.webp",
+            "images/p31_unit3_learn_2_generated.webp",
+            "images/p32_unit3_learn_more_1_generated.webp",
+            "images/p33_unit3_learn_more_2_generated.webp",
+            "images/p34_unit3_read_generated.webp",
+            "images/p35_unit3_sing_generated.webp",
+            "images/p36_unit3_play_generated.webp",
+            "images/p37_unit4_title_generated.webp",
+            "images/p38_unit4_talk_1_generated.webp",
+            "images/p39_unit4_talk_2_generated.webp",
+            "images/p40_unit4_learn_1_generated.webp",
+            "images/p41_unit4_learn_2_generated.webp",
+            "images/p42_unit4_learn_more_1_generated.webp",
+            "images/p43_unit4_learn_more_2_generated.webp",
+            "images/p44_unit4_read_generated.webp",
+            "images/p45_unit4_sing_generated.webp",
+            "images/p46_unit4_play_generated.webp",
+            "images/p47_review2_a_generated.webp",
+            "images/p48_review2_b_generated.webp",
+            "images/p49_project_generated.webp",
+            "images/p50_wordlist_generated.webp"
+        ];
+
+        let currentPage = 0;
+        const totalPages = slides.length;
+
+        // Initialize thumbnails
+        const bottomBar = document.getElementById('bottomBar');
+        slides.forEach((src, i) => {
+            const btn = document.createElement('div');
+            btn.className = 'thumb-btn';
+            btn.style.backgroundImage = `url(${src})`;
+            btn.onclick = () => goToPage(i);
+            btn.id = `thumb-${i}`;
+            bottomBar.appendChild(btn);
+        });
+
+        function goToPage(page) {
+            if (page < 0 || page >= totalPages) return;
+            currentPage = page;
+            
+            document.getElementById('slideImage').src = slides[page];
+            document.getElementById('pageIndicator').textContent = `${page + 1} / ${totalPages}`;
+            
+            // Update nav buttons
+            document.getElementById('prevBtn').disabled = (page === 0);
+            document.getElementById('nextBtn').disabled = (page === totalPages - 1);
+            
+            // Update thumbnails
+            document.querySelectorAll('.thumb-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === page);
+            });
+            
+            // Scroll thumbnail into view
+            document.getElementById(`thumb-${page}`).scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            
+            // Show/hide small trigger buttons
+            // P14 = index 13 (dice for Job Path Game)
+            // P36 = index 35 (dice for Helping Path Game)
+            // P24 = index 23 (spinner for Chore Spinner Game)
+            // P46 = index 45 (spinner for Goal Spinner Game)
+            const diceTrigger = document.getElementById('diceTrigger');
+            const spinnerTrigger = document.getElementById('spinnerTrigger');
+            diceTrigger.style.display = (page === 13 || page === 35) ? 'flex' : 'none';
+            spinnerTrigger.style.display = (page === 23 || page === 45) ? 'flex' : 'none';
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('diceModal').classList.contains('active') ||
+                document.getElementById('spinnerModal').classList.contains('active')) {
+                if (e.key === 'Escape') { closeDiceModal(); closeSpinnerModal(); }
+                return;
+            }
+            if (e.key === 'ArrowLeft') goToPage(currentPage - 1);
+            if (e.key === 'ArrowRight') goToPage(currentPage + 1);
+        });
+
+        // ==================== DICE MODAL ====================
+        let isRollingDice = false;
+
+        function openDiceModal() {
+            document.getElementById('diceModal').classList.add('active');
+            document.getElementById('diceResultText').textContent = '';
+            drawDiceFace(1);
+        }
+        function closeDiceModal() {
+            document.getElementById('diceModal').classList.remove('active');
+        }
+
+        function drawDiceFace(num) {
+            const face = document.getElementById('diceFace');
+            face.innerHTML = '';
+            const positions = {
+                1: [[1,1]],
+                2: [[0,2],[2,0]],
+                3: [[0,2],[1,1],[2,0]],
+                4: [[0,0],[0,2],[2,0],[2,2]],
+                5: [[0,0],[0,2],[1,1],[2,0],[2,2]],
+                6: [[0,0],[0,2],[1,0],[1,2],[2,0],[2,2]]
+            };
+            for (let r = 0; r < 3; r++) {
+                for (let c = 0; c < 3; c++) {
+                    const cell = document.createElement('div');
+                    const hasDot = positions[num].some(p => p[0] === r && p[1] === c);
+                    if (hasDot) {
+                        cell.className = 'dice-dot';
+                    } else {
+                        cell.style.width = '18px';
+                        cell.style.height = '18px';
+                    }
+                    face.appendChild(cell);
+                }
+            }
+        }
+
+        function rollDice() {
+            if (isRollingDice) return;
+            isRollingDice = true;
+            const box = document.getElementById('diceBox');
+            const resultText = document.getElementById('diceResultText');
+            box.classList.add('rolling');
+            resultText.textContent = '';
+            let count = 0;
+            const interval = setInterval(() => {
+                drawDiceFace(Math.floor(Math.random() * 6) + 1);
+                count++;
+                if (count > 15) {
+                    clearInterval(interval);
+                    const result = Math.floor(Math.random() * 6) + 1;
+                    drawDiceFace(result);
+                    box.classList.remove('rolling');
+                    resultText.textContent = `\u{1F3B2} You rolled: ${result}! \u4F60\u64F2\u5230\u4E86 ${result}\uFF01`;
+                    isRollingDice = false;
+                }
+            }, 100);
+        }
+
+        // ==================== SPINNER MODAL ====================
+        let isSpinning = false;
+        let spinnerRotation = 0;
+
+        // P24 Chore Spinner: wash dishes $1, sweep floor $1, water plants $1, walk dog $2, make bed $1, take out trash $1
+        const spinnerSectionsP24 = [
+            { name: "wash dishes \u6d17\u7897", price: "$1" },
+            { name: "sweep floor \u6383\u5730", price: "$1" },
+            { name: "water plants \u6f86\u82b1", price: "$1" },
+            { name: "walk dog \u905b\u72d7", price: "$2" },
+            { name: "make bed \u6574\u7406\u5e8a\u92ea", price: "$1" },
+            { name: "take out trash \u5012\u5783\u573e", price: "$1" }
+        ];
+        // P46 Goal Spinner: $5, $10, $15, $20, $30, $50
+        const spinnerSectionsP46 = [
+            { name: "piggy bank \u5b58\u9322\u7b52", price: "$5" },
+            { name: "soccer ball \u8db3\u7403", price: "$10" },
+            { name: "art set \u7f8e\u8853\u7528\u54c1", price: "$15" },
+            { name: "book set \u66f8\u5957", price: "$20" },
+            { name: "skateboard \u6ed1\u677f", price: "$30" },
+            { name: "bicycle \u8173\u8e0f\u8eca", price: "$50" }
+        ];
+        function getSpinnerSections() {
+            return (currentPage === 23) ? spinnerSectionsP24 : spinnerSectionsP46;
+        }
+
+        function openSpinnerModal() {
+            // Update spinner labels based on current page
+            const sections = getSpinnerSections();
+            const labels = document.querySelectorAll('.spinner-section-label span');
+            labels.forEach((label, i) => {
+                if (sections[i]) {
+                    if (currentPage === 23) {
+                        const engName = sections[i].name.split(' ').filter(w => !/[\u4e00-\u9fff]/.test(w)).join(' ');
+                        label.textContent = engName + ' ' + sections[i].price;
+                    } else {
+                        label.textContent = sections[i].name.split(' ').filter(w => !/[\u4e00-\u9fff]/.test(w)).join(' ') + ' ' + sections[i].price;
+                    }
+                }
+            });
+            // Update modal title
+            const title = document.querySelector('.spinner-modal h2');
+            if (currentPage === 23) {
+                title.textContent = '\u{1F3B0} Chore Spinner \u5bb6\u4e8b\u8f49\u76e4';
+            } else {
+                title.textContent = '\u{1F3B0} Goal Spinner \u76ee\u6a19\u8f49\u76e4';
+            }
+            document.getElementById('spinnerModal').classList.add('active');
+            document.getElementById('spinnerResultText').textContent = '';
+        }
+        function closeSpinnerModal() {
+            document.getElementById('spinnerModal').classList.remove('active');
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+            const wheel = document.getElementById('spinnerWheel');
+            const resultText = document.getElementById('spinnerResultText');
+            resultText.textContent = '';
+            const extraSpins = (Math.floor(Math.random() * 5) + 5) * 360;
+            const randomAngle = Math.floor(Math.random() * 360);
+            spinnerRotation += extraSpins + randomAngle;
+            wheel.style.transform = `rotate(${spinnerRotation}deg)`;
+            // The pointer is fixed at top (0deg). The wheel rotates clockwise.
+            const normalizedAngle = spinnerRotation % 360;
+            const sectionIndex = Math.round(((360 - normalizedAngle - 30 + 360) % 360) / 60) % 6;
+            const sections = getSpinnerSections();
+            const winner = sections[sectionIndex];
+            setTimeout(() => {
+                if (currentPage === 23) {
+                    resultText.textContent = `\u{1F3AF} ${winner.name}! Earn ${winner.price}! \u8cfa${winner.price}\uFF01`;
+                } else {
+                    resultText.textContent = `\u{1F3AF} ${winner.name}! Goal: ${winner.price}! \u76ee\u6a19\uFF1A${winner.price}\uFF01`;
+                }
+                isSpinning = false;
+            }, 4000);
+        }
+
+        // Start on page 1
+        goToPage(0);
+    </script>
+</body>
+</html>
